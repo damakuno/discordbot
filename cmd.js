@@ -109,12 +109,19 @@ function wotd(params, message, callback) {
                 let word_raw = $('.word-header h1').text();
                 let word = word_raw.charAt(0).toUpperCase() + word_raw.slice(1);
                 let attribute = $('body > div.outer-container > div > div.main-wrapper.clearfix > main > article > div.article-header-container.wod-article-header > div.quick-def-box > div.word-attributes > span.main-attr').text();
-                let definition = htmlToText($('body > div.outer-container > div > div.main-wrapper.clearfix > main > article > div.lr-cols-area.clearfix.sticky-column > div.left-content > div > div.wod-definition-container > p').html());
+
+let definition = [];
+$('body > div.outer-container > div > div.main-wrapper.clearfix > main > article > div.lr-cols-area.clearfix.sticky-column > div.left-content > div > div.wod-definition-container').find('p').each((i, p) => {
+	if($(p).find('strong').text().includes(':')) {
+		definition.push(htmlToText($(p).html()));
+	}
+	
+});
 
                 let wotd = {
                     word: word,
                     attribute: attribute,
-                    definition: definition,
+                    definition: definition.join('\n'),
                     downloaded: true
                 };
 

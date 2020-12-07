@@ -3,3 +3,5 @@ data.json
 
 node_modules
 package-lock.json
+
+exp.js
