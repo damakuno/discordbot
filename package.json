@@ -1,0 +1,21 @@
+{
+  "name": "nicobot",
+  "version": "1.0.0",
+  "description": "general purpose discord bot",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1", "start":"node app --unhandled-rejections=strict"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "cheerio": "^1.0.0-rc.3",
+    "cron": "^1.8.2",
+    "discord.js": "^11.6.4",
+    "haikudos": "^1.0.7",
+    "html-to-text": "^6.0.0",
+    "lodash": "^4.17.20",
+    "wordnet": "^0.1.2"
+  }
+}
