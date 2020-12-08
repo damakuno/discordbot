@@ -44,6 +44,7 @@ function startbot() {
   try {
     client.on('ready', () => {
       whconsole.log(`Logged in as ${client.user.tag}!`);
+	whconsole.log(`The time is ${new Date(Date.now())}`);
       module.exports = {
         client_user_id: client.user.id
       }
