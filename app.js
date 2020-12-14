@@ -38,7 +38,8 @@ function startbot() {
     "anh ơi": "anh đây... <:NXcapoowave:646652140684836874>",
     "em ơi": "em đây... <:NXcapoowave:646652140684836874>",
     "xạo": "không xạo <:NXcapoocri:695087074600288348>",
-    "xạo!": "không xạo! <:NXcapoocri:695087074600288348>"
+    "xạo!": "không xạo! <:NXcapoocri:695087074600288348>",
+"ping":"Pong!"
   }
 
   try {
@@ -122,7 +123,7 @@ function startbot() {
     //   }
     // });
 
-    client.login(config.token);
+    client.login(config.token).then(() => {}).catch((err) => { whconsole.log(err); process.exit(1); });
 
 
   } catch (err) {

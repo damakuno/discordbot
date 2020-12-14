@@ -129,10 +129,10 @@ $('body > div.outer-container > div > div.main-wrapper.clearfix > main > article
 
                 fs.writeFileSync('data.json', JSON.stringify(data));
 
-                callback(`The word of the day is: **${word}** - *(${attribute})* <:NXcapoowave:646652140684836874>\n*Definition* *${definition}*`);
+                callback(`The word of the day is: **${word}** - *(${attribute})* <:NXcapoowave:646652140684836874>\n*Definition(s)*\n *${data.wotd.definition}*`);
             }).catch(err => console.log(err));
         } else {
-            callback(`The word of the day is: **${data.wotd.word}** - *(${data.wotd.attribute})* <:NXcapoowave:646652140684836874>\n*Definition* *${data.wotd.definition}*`);
+            callback(`The word of the day is: **${data.wotd.word}** - *(${data.wotd.attribute})* <:NXcapoowave:646652140684836874>\n*Definition(s)*\n *${data.wotd.definition}*`);
         }
     });
 }
