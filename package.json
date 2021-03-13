@@ -4,7 +4,8 @@
   "description": "general purpose discord bot",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1", "start":"node app --unhandled-rejections=strict"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app --unhandled-rejections=strict"
   },
   "author": "",
   "license": "MIT",
