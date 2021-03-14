@@ -7,10 +7,13 @@ const Trivia = require('./Trivia').Trivia
 const whconsole = require('./whconsole');
 const _ = require('lodash');
 const { htmlToText } = require('html-to-text');
-
+const chrono = require('chrono-node');
 let config_file = fs.readFileSync('config.json');
 let config = JSON.parse(config_file);
 
+
+const MongoClient = require('mongodb').MongoClient;
+const uri = `mongodb+srv://${config.mongodb.user}:${config.mongodb.pass}@protocluster.wngrr.mongodb.net/${config.mongodb.dbname}?retryWrites=true&w=majority`;
 // let data_file = fs.readFileSync('data.json');
 // let data = JSON.parse(data_file);
 
@@ -26,7 +29,7 @@ let getData = () => {
     })
 }
 
-let knownCommands = { echo, haiku, trivia, word, wotd, dadjoke }//trivia, wotd }; //, confess }
+let knownCommands = { echo, haiku, trivia, word, wotd, dadjoke, todo }//trivia, wotd }; //, confess }
 
 let dmCommands = { confess, invite };
 
@@ -151,6 +154,25 @@ function dadjoke(params, message, callback) {
     });
 }
 
+const pick = (...props) => o => props.reduce((a, e) => ({ ...a, [e]: o[e] }), {});
+
+function todo(params, message, callback) {
+    if (params.length > 0) {
+        const client = new MongoClient(uri, { useNewUrlParser: true });
+        client.connect(err => {
+            let dt = chrono.parse(params.join(' '));
+            let text = params.join(' ').substring(0, dt[0].index - 1);
+            let date = dt[0].start.date();
+            const collection = client.db("dama").collection("todo");
+            // perform actions on the collection object
+            collection.insertOne({
+                type: "test", text: text, current_date: new Date(), todo_date: date,
+                chat: pick('id', 'name', 'createdAt', 'type')(message.channel), user: pick('id', 'bot', 'createdAt', 'locale', 'tag', 'username')(message.author)
+            });
+            callback(`I will remind you: "${text}" at ${new Date(date)}`);
+        });
+    }
+}
 // dm commands
 
 function confess(params, channel_id, callback) {

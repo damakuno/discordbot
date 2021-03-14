@@ -2,8 +2,6 @@ const fs = require('fs');
 const cron = require('cron');
 const whconsole = require('./whconsole');
 
-
-
 let config_file = fs.readFileSync('config.json');
 let config = JSON.parse(config_file);
 
