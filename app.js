@@ -1,19 +1,19 @@
 const cluster = require('cluster');
 
- if (cluster.isMaster) {
-   cluster.fork();
+//  if (cluster.isMaster) {
+//    cluster.fork();
 
-   cluster.on('exit', function (worker, code, signal) {
-     cluster.fork();
-   });
- }
+//    cluster.on('exit', function (worker, code, signal) {
+//      cluster.fork();
+//    });
+//  }
 
- if (cluster.isWorker) {
-   startbot();
- }
+//  if (cluster.isWorker) {
+//    startbot();
+//  }
 
 //https://discordapp.com/oauth2/authorize?client_id=191630078269063168&scope=bot
-//startbot();
+startbot();
 
 function startbot() {
   const fs = require('fs');

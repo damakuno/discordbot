@@ -26,7 +26,7 @@ let getData = () => {
     })
 }
 
-let knownCommands = { echo, haiku, trivia, word, wotd, }//trivia, wotd }; //, confess }
+let knownCommands = { echo, haiku, trivia, word, wotd, dadjoke }//trivia, wotd }; //, confess }
 
 let dmCommands = { confess, invite };
 
@@ -110,13 +110,13 @@ function wotd(params, message, callback) {
                 let word = word_raw.charAt(0).toUpperCase() + word_raw.slice(1);
                 let attribute = $('body > div.outer-container > div > div.main-wrapper.clearfix > main > article > div.article-header-container.wod-article-header > div.quick-def-box > div.word-attributes > span.main-attr').text();
 
-let definition = [];
-$('body > div.outer-container > div > div.main-wrapper.clearfix > main > article > div.lr-cols-area.clearfix.sticky-column > div.left-content > div > div.wod-definition-container').find('p').each((i, p) => {
-	if($(p).find('strong').text().includes(':')) {
-		definition.push(htmlToText($(p).html()));
-	}
-	
-});
+                let definition = [];
+                $('body > div.outer-container > div > div.main-wrapper.clearfix > main > article > div.lr-cols-area.clearfix.sticky-column > div.left-content > div > div.wod-definition-container').find('p').each((i, p) => {
+                    if ($(p).find('strong').text().includes(':')) {
+                        definition.push(htmlToText($(p).html()));
+                    }
+
+                });
 
                 let wotd = {
                     word: word,
@@ -137,6 +137,20 @@ $('body > div.outer-container > div > div.main-wrapper.clearfix > main > article
     });
 }
 
+function randInt(min, max) {
+    return parseInt(Math.random() * (max - min) + min)
+}
+
+function dadjoke(params, message, callback) {
+    axios.get('https://fatherhood.gov/jsonapi/node/dad_jokes').then((res) => {
+        let data = res.data;
+        let count = data.data.length;
+        let index = randInt(0, count);
+        let joke = data.data[index];
+        callback(`\n${joke.attributes.field_joke_opener}\n${joke.attributes.field_joke_response}`);
+    });
+}
+
 // dm commands
 
 function confess(params, channel_id, callback) {
@@ -151,7 +165,7 @@ function confess(params, channel_id, callback) {
     callback('Confession submitted to page!');
 }
 
-function invite(params, message, callback) {    
+function invite(params, message, callback) {
     callback('https://discordapp.com/oauth2/authorize?client_id=191630078269063168&scope=bot');
 }
 
