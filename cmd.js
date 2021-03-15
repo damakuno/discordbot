@@ -29,7 +29,7 @@ let getData = () => {
     })
 }
 
-let knownCommands = { echo, haiku, trivia, word, wotd, dadjoke, todo }//trivia, wotd }; //, confess }
+let knownCommands = { echo, haiku, trivia, word, wotd, dadjoke, todo, roll}//trivia, wotd }; //, confess }
 
 let dmCommands = { confess, invite };
 
@@ -152,6 +152,36 @@ function dadjoke(params, message, callback) {
         let joke = data.data[index];
         callback(`\n${joke.attributes.field_joke_opener}\n${joke.attributes.field_joke_response}`);
     });
+}
+
+function roll(params, message, callback) {
+    let re = /(\d+)\s*-\s*(\d+)/;
+    let text = params.join(' ');
+    let nums = text.match(re);
+    let result = {
+        min: 1,
+	max: 6,
+	value: 0
+    };
+    if (nums) {
+        let n1 = parseInt(nums[1]);
+        let n2 = parseInt(nums[2]);
+        if (n1 > n2) {
+	    result.min = n2;
+	    result.max = n1;
+	} else {
+	    result.min = n1;
+	    result.max = n2;
+	}
+    } else if (!isNaN(params[0])) {
+        n_max = parseInt(params[0])
+	result.min = 1;
+	result.max = n_max;
+    }
+
+    result.value = randInt(result.min, result.max + 1);
+
+    callback(`\nRolling (${result.min}-${result.max})\nYou rolled ${result.value}! <:NXcapoowave:646652140684836874>`);
 }
 
 const pick = (...props) => o => props.reduce((a, e) => ({ ...a, [e]: o[e] }), {});
