@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { exec } = require('child_process');
 const haikudos = require('haikudos');
 const wordnet = require('wordnet');
 const axios = require('axios').default;
@@ -29,7 +30,9 @@ let getData = () => {
     })
 }
 
-let knownCommands = { echo, haiku, trivia, word, wotd, dadjoke, todo, roll}//trivia, wotd }; //, confess }
+let knownCommands = { echo, haiku, trivia, word, wotd, dadjoke, todo, roll, status }
+
+//trivia, wotd }; //, confess }
 
 let dmCommands = { confess, invite };
 
@@ -202,6 +205,22 @@ function todo(params, message, callback) {
             callback(`I will remind you: "${text}" at ${new Date(date)}`);
         });
     }
+}
+
+function status(params, message, callback) {
+    exec('termux-battery-status', (err, stdout, stderr) => {
+        if (err) {
+	    console.log(err.message);
+	    return;
+	}
+	if (stderr) {
+	    console.log(stderr);
+	    return;
+	}
+	
+	let b = JSON.parse(stdout);
+	callback(`\nMy heath is **${b.health}**!\nI have **${b.percentage}%** battery left...\nI am **${b.plugged}** and **${b.status}**.\nMy temperature is **${b.temperature.toFixed(1)}°C**`);
+    });
 }
 // dm commands
 
