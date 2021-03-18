@@ -219,7 +219,7 @@ function status(params, message, callback) {
 	}
 	
 	let b = JSON.parse(stdout);
-	callback(`\nMy heath is **${b.health}**!\nI have **${b.percentage}%** battery left...\nI am **${b.plugged}** and **${b.status}**.\nMy temperature is **${b.temperature.toFixed(1)}°C**`);
+	callback(`\nMy health is **${b.health}**!\nI have **${b.percentage}%** battery left...\nI am **${b.plugged}** and **${b.status}**.\nMy temperature is **${b.temperature.toFixed(1)}°C**`);
     });
 }
 // dm commands
