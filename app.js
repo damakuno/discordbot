@@ -54,7 +54,7 @@ function startbot() {
     client.on('message', msg => {
       try {
         let author = msg.author;
-        let confession_channel = client.channels.get("646374450555650059");
+        let confession_channel = client.channels.cache.get("646374450555650059");
         // Don't respond to self messages
         if (client.user.id === author.id) {
           //maybe do something if it receives its own message

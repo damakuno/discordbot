@@ -251,10 +251,10 @@ module.exports = {
         // The rest (if any) are the parameters:
         const params = parse.splice(1);
 
-        confession_channel = client.channels.get("646374450555650059");
+        confession_channel = client.channels.cache.get("646374450555650059");
 
-        bot_test_channel = client.channels.get('646335117190496256');
-        trivia_channel = client.channels.get('647093527138009088');
+        bot_test_channel = client.channels.cache.get('646335117190496256');
+        trivia_channel = client.channels.cache.get('647093527138009088');
 
         // Initialize Trivia
         // if (!_trivia) _trivia = new Trivia(bot_test_channel, client);
