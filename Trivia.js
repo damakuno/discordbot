@@ -152,7 +152,7 @@ class Trivia {
     category_selected(collected) {
         let reaction = collected.first();
         let choice = choice_emoji.indexOf(reaction.emoji.name);
-        let user = reaction.users.last();
+        let user = reaction.users.cache.last();
         whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, category selected by ${user.username}, user id: ${user.id}`);
         this.set_options_category(choice);
         this.ask();
@@ -240,7 +240,7 @@ class Trivia {
     answer_selected(collected) {
         let reaction = collected.first();
         let choice = choice_emoji.indexOf(reaction.emoji.name);
-        let user = reaction.users.last();
+        let user = reaction.users.cache.last();
         whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, answer selected by ${user.username}, user id: ${user.id}`);
         if (choice === this.correct_answer_index) {
             this.active_channel.send(`Congratulations <@${user.id}>, you got it! <:NXcapoowave:646652140684836874> The correct answer is: **${decodeURIComponent(this.answers[this.correct_answer_index]).trim()}**`);
