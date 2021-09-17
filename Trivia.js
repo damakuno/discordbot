@@ -58,7 +58,7 @@ class Trivia {
 
     activate(params, callback) {
         // Don't allow another instance of trivia if one is active
-        whconsole.log(`Trivia activate function is called from ${this.active_channel.name}, channel id: ${this.active_channel.id}`);
+        // whconsole.log(`Trivia activate function is called from ${this.active_channel.name}, channel id: ${this.active_channel.id}`);
         if (this.active === true) {
             this.active_channel.send('Please wait, there is an on-going Trivia! <:NXcapoowave:646652140684836874>');
             this.send_question_message();
@@ -66,9 +66,9 @@ class Trivia {
         }
         // Retrive categories
         if (this.categories.length < 4) {
-            whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, retrive categories`);
+            // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, retrive categories`);
             axios.get('https://opentdb.com/api_category.php').then((res) => {
-                whconsole.log(`**From ${this.active_channel.name}, channel id: ${this.active_channel.id}, categories retrieved**`);
+                // whconsole.log(`**From ${this.active_channel.name}, channel id: ${this.active_channel.id}, categories retrieved**`);
                 if (res.data) {
                     this.categories = res.data.trivia_categories;
                     this.active_channel.send('Trivia time! <:NXcapoowave:646652140684836874>');
@@ -76,7 +76,7 @@ class Trivia {
                 }
             });
         } else {
-            whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, categories already exist, starting category selection`);
+            // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, categories already exist, starting category selection`);
             if (this.category_select_active === true) {
                 this.active_channel.send('Please wait, there is an on-going Trivia! <:NXcapoowave:646652140684836874>');
                 this.send_category_message();
@@ -89,7 +89,7 @@ class Trivia {
     }
 
     select_category() {
-        whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, category selection`);
+        // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, category selection`);
         this.category_select_active = true;
         let temp_categories = this.categories;
         let random_categories = [];
@@ -112,7 +112,7 @@ class Trivia {
     }
 
     send_category_message(msg) {
-        whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, sending category message`);
+        // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, sending category message`);
         const filter = (reaction, user) => {
             let exists = choice_emoji.includes(reaction.emoji.name)
                 && !user.bot //user.id !== client.user.id;
@@ -125,7 +125,7 @@ class Trivia {
         }
         // send the message and add the reactions;
         this.active_channel.send(msg).then((message) => {
-            whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, category message sent, message id: ${message.id}`);
+            // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, category message sent, message id: ${message.id}`);
             this.category_message = message;
             let emoji_index = 0;
 
@@ -153,7 +153,7 @@ class Trivia {
         let reaction = collected.first();
         let choice = choice_emoji.indexOf(reaction.emoji.name);
         let user = reaction.users.cache.last();
-        whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, category selected by ${user.username}, user id: ${user.id}`);
+        // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, category selected by ${user.username}, user id: ${user.id}`);
         this.set_options_category(choice);
         this.ask();
         this.active_channel.send(`<@${user.id}>, you chose: **${this.active_categories[choice].name}**`);
@@ -166,9 +166,9 @@ class Trivia {
 
     ask() {
         // Retrive questions
-        whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, retrieving question`);
+        // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, retrieving question`);
         axios.get('https://opentdb.com/api.php', { params: this.options }).then((res) => {
-            whconsole.log(`**From ${this.active_channel.name}, channel id: ${this.active_channel.id}, question retrieved**`);
+            // whconsole.log(`**From ${this.active_channel.name}, channel id: ${this.active_channel.id}, question retrieved**`);
             if (res.data) {
                 this.content = res.data.results;
             }
@@ -177,7 +177,7 @@ class Trivia {
     }
 
     start() {
-        whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, trivia start`);
+        // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, trivia start`);
         this.active = true;
 
         let qnum = randInt(0, this.content.length - 1); //Math.floor(Math.random() * this.content.length);
@@ -205,7 +205,7 @@ class Trivia {
     }
 
     send_question_message(msg) {
-        whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, sending trivia question`);
+        // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, sending trivia question`);
         const filter = (reaction, user) => {
             let exists = choice_emoji.includes(reaction.emoji.name)
                 && !user.bot //user.id !== client.user.id;
@@ -218,7 +218,7 @@ class Trivia {
         }
 
         this.active_channel.send(msg).then((message) => {
-            whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, trivia question sent, message id: ${message.id}`);
+            // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, trivia question sent, message id: ${message.id}`);
             this.message = message;
             message.awaitReactions(filter, { max: 1 }).then(this.answer_selected.bind(this))
                 .catch(err => whconsole.log(err));
@@ -241,7 +241,7 @@ class Trivia {
         let reaction = collected.first();
         let choice = choice_emoji.indexOf(reaction.emoji.name);
         let user = reaction.users.cache.last();
-        whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, answer selected by ${user.username}, user id: ${user.id}`);
+        // whconsole.log(`From ${this.active_channel.name}, channel id: ${this.active_channel.id}, answer selected by ${user.username}, user id: ${user.id}`);
         if (choice === this.correct_answer_index) {
             this.active_channel.send(`Congratulations <@${user.id}>, you got it! <:NXcapoowave:646652140684836874> The correct answer is: **${decodeURIComponent(this.answers[this.correct_answer_index]).trim()}**`);
         } else {

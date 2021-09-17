@@ -9,14 +9,14 @@ const whconsole = require('./whconsole');
 const _ = require('lodash');
 const { htmlToText } = require('html-to-text');
 const chrono = require('chrono-node');
+const ytdl = require('ytdl-core');
+const yt_search = require('youtube-search-api');
 let config_file = fs.readFileSync('config.json');
 let config = JSON.parse(config_file);
 
 
 const MongoClient = require('mongodb').MongoClient;
 const uri = `mongodb+srv://${config.mongodb.user}:${config.mongodb.pass}@protocluster.wngrr.mongodb.net/${config.mongodb.dbname}?retryWrites=true&w=majority`;
-// let data_file = fs.readFileSync('data.json');
-// let data = JSON.parse(data_file);
 
 let getData = () => {
     return new Promise((resolve, reject) => {
@@ -30,7 +30,11 @@ let getData = () => {
     })
 }
 
-let knownCommands = { echo, haiku, trivia, word, wotd, dadjoke, todo, roll, status }
+let knownCommands = {
+    echo, haiku, trivia, word, wotd, dadjoke,
+    todo, roll, status,
+    queue, skip
+}
 
 //trivia, wotd }; //, confess }
 
@@ -86,17 +90,12 @@ function word(params, message, callback) {
 }
 
 function trivia(params, message, callback) {
-    // _trivia.activate(params, callback);    
     try {
         if (trivia_channels.includes(message.channel.id)) {
-            whconsole.log('activating existing trivia');
             active_trivias[message.channel.id].activate();
-            whconsole.log('activated existing trivia');
         } else {
             trivia_channels.push(message.channel.id);
-            whconsole.log('creating new trivia');
             active_trivias[message.channel.id] = new Trivia(message.channel);
-            whconsole.log('activating new trivia');
             active_trivias[message.channel.id].activate();
         }
     } catch (err) {
@@ -163,23 +162,23 @@ function roll(params, message, callback) {
     let nums = text.match(re);
     let result = {
         min: 1,
-	max: 6,
-	value: 0
+        max: 6,
+        value: 0
     };
     if (nums) {
         let n1 = parseInt(nums[1]);
         let n2 = parseInt(nums[2]);
         if (n1 > n2) {
-	    result.min = n2;
-	    result.max = n1;
-	} else {
-	    result.min = n1;
-	    result.max = n2;
-	}
+            result.min = n2;
+            result.max = n1;
+        } else {
+            result.min = n1;
+            result.max = n2;
+        }
     } else if (!isNaN(params[0])) {
         n_max = parseInt(params[0])
-	result.min = 1;
-	result.max = n_max;
+        result.min = 1;
+        result.max = n_max;
     }
 
     result.value = randInt(result.min, result.max + 1);
@@ -210,18 +209,124 @@ function todo(params, message, callback) {
 function status(params, message, callback) {
     exec('termux-battery-status', (err, stdout, stderr) => {
         if (err) {
-	    console.log(err.message);
-	    return;
-	}
-	if (stderr) {
-	    console.log(stderr);
-	    return;
-	}
-	
-	let b = JSON.parse(stdout);
-	callback(`\nMy health is **${b.health}**!\nI have **${b.percentage}%** battery left...\nI am **${b.plugged}** and **${b.status}**.\nMy temperature is **${b.temperature.toFixed(1)}°C**`);
+            console.log(err.message);
+            return;
+        }
+        if (stderr) {
+            console.log(stderr);
+            return;
+        }
+
+        let b = JSON.parse(stdout);
+        callback(`\nMy health is **${b.health}**!\nI have **${b.percentage}%** battery left...\nI am **${b.plugged}** and **${b.status}**.\nMy temperature is **${b.temperature.toFixed(1)}°C**`);
     });
 }
+
+let player_active_channel;
+let queue_list = [];
+let stream;
+let stream_playing = false;
+let dispatcher;
+let cur_connection;
+const streamOptions = { seek: 0, volume: 0.3 };
+
+function seconds_to_mmss(SECONDS) { 
+    if (SECONDS > 3600) {
+        return new Date(SECONDS * 1000).toISOString().substr(11, 8)
+    } else {
+        return new Date(SECONDS * 1000).toISOString().substr(14, 5) 
+    }
+}
+
+function playNext() {
+    if (cur_connection) {
+        queue_list.shift();
+        if (queue_list.length > 0) {
+            playFromQueue(cur_connection, queue_list[0].video_url);
+        }
+    }
+}
+
+function playFromQueue(connection, video_url) {
+    stream = ytdl(video_url, { filter: 'audioonly' });
+    dispatcher = connection.play(stream, streamOptions);
+    stream_playing = true;
+    player_active_channel.send(`Now playing: ${queue_list[0].video_title} - ${seconds_to_mmss(queue_list[0].duration)}`);
+    console.log(queue_list);
+    setTimeout(function() {
+        stream_playing = false;
+        console.log('stream end');
+        playNext();        
+    }, (queue_list[0].duration * 1000) + 3000);
+    // stream.on('end', function () {
+    //     stream_playing = false;
+    //     console.log('stream end');
+    //     playNext();
+    // });
+}
+
+function queue(params, message, callback) {
+    if (params.length > 0) {
+        if (!player_active_channel) {
+            player_active_channel = message.channel;
+        }
+        
+        let search_url = params.join(' ');
+        yt_search.GetListByKeyword(search_url).then(res => {
+            let search_results = res.items;
+            let first_result = search_results[0];
+            let voiceChannel = message.member.voice.channel;
+            let url = `https://www.youtube.com/watch?v=${first_result.id}`;
+            ytdl.getInfo(url).then(info => {
+                queue_list.push({
+                    video_id: first_result.id,
+                    video_title: first_result.title,
+                    video_url: url,
+                    duration: info.videoDetails.lengthSeconds,
+                    user_tag: message.member.user.tag
+                });
+                player_active_channel.send(`Queued: ${first_result.title} - ${seconds_to_mmss(info.videoDetails.lengthSeconds)}`);
+                voiceChannel.join().then(connection => {
+                    cur_connection = connection;
+                    if (!stream_playing) {
+                        playFromQueue(connection, queue_list[0].video_url);
+                    }
+                });
+            });
+        });
+    } else {        
+        let queue_text = '';
+        for (let item of queue_list)  {
+            queue_text += `${item.video_title} - ${seconds_to_mmss(item.duration)}, queued by ${item.user_tag} \r\n`
+        }
+        player_active_channel.send(queue_text);
+    }
+}
+
+function skip(params, message) {
+    playNext();
+}
+
+// function play(params, message, callback) {
+//     if (params.length > 0) {
+//         let search_url = params.join(' ');
+//         yt_search.GetListByKeyword(search_url).then(res => {
+//             let search_results = res.items;
+//             let first_result = search_results[0];
+//             let voiceChannel = message.member.voice.channel;
+//             voiceChannel.join().then(connection => {
+//                 console.log("joined channel");
+//                 stream = ytdl(`https://www.youtube.com/watch?v=${first_result.id}`, { filter: 'audioonly' });
+//                 dispatcher = connection.play(stream, streamOptions);
+//                 callback(`Now playing: ${first_result.title}`);
+//                 dispatcher.on("end", end => {
+//                     console.log("left channel");
+//                     voiceChannel.leave();
+//                 });
+//             }).catch(err => console.log(err));
+//         });
+//     }
+// }
 // dm commands
 
 function confess(params, channel_id, callback) {
