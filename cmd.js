@@ -11,11 +11,13 @@ const { htmlToText } = require('html-to-text');
 const chrono = require('chrono-node');
 const ytdl = require('ytdl-core');
 const yt_search = require('youtube-search-api');
+const {cnwotd} = require('./lib/scraping');
 let config_file = fs.readFileSync('config.json');
 let config = JSON.parse(config_file);
 
 
 const MongoClient = require('mongodb').MongoClient;
+const { clearTimeout } = require('timers');
 const uri = `mongodb+srv://${config.mongodb.user}:${config.mongodb.pass}@protocluster.wngrr.mongodb.net/${config.mongodb.dbname}?retryWrites=true&w=majority`;
 
 let getData = () => {
@@ -33,7 +35,8 @@ let getData = () => {
 let knownCommands = {
     echo, haiku, trivia, word, wotd, dadjoke,
     todo, roll, status,
-    queue, skip
+    queue, skip,
+    cnwotd
 }
 
 //trivia, wotd }; //, confess }
@@ -224,17 +227,18 @@ function status(params, message, callback) {
 
 let player_active_channel;
 let queue_list = [];
+let queue_timeout;
 let stream;
 let stream_playing = false;
 let dispatcher;
 let cur_connection;
 const streamOptions = { seek: 0, volume: 0.3 };
 
-function seconds_to_mmss(SECONDS) { 
+function seconds_to_mmss(SECONDS) {
     if (SECONDS > 3600) {
         return new Date(SECONDS * 1000).toISOString().substr(11, 8)
     } else {
-        return new Date(SECONDS * 1000).toISOString().substr(14, 5) 
+        return new Date(SECONDS * 1000).toISOString().substr(14, 5)
     }
 }
 
@@ -243,6 +247,8 @@ function playNext() {
         queue_list.shift();
         if (queue_list.length > 0) {
             playFromQueue(cur_connection, queue_list[0].video_url);
+        } else {
+
         }
     }
 }
@@ -253,10 +259,10 @@ function playFromQueue(connection, video_url) {
     stream_playing = true;
     player_active_channel.send(`Now playing: ${queue_list[0].video_title} - ${seconds_to_mmss(queue_list[0].duration)}`);
     console.log(queue_list);
-    setTimeout(function() {
+    queue_timeout = setTimeout(function () {
         stream_playing = false;
         console.log('stream end');
-        playNext();        
+        playNext();
     }, (queue_list[0].duration * 1000) + 3000);
     // stream.on('end', function () {
     //     stream_playing = false;
@@ -270,7 +276,7 @@ function queue(params, message, callback) {
         if (!player_active_channel) {
             player_active_channel = message.channel;
         }
-        
+
         let search_url = params.join(' ');
         yt_search.GetListByKeyword(search_url).then(res => {
             let search_results = res.items;
@@ -294,9 +300,9 @@ function queue(params, message, callback) {
                 });
             });
         });
-    } else {        
+    } else {
         let queue_text = '';
-        for (let item of queue_list)  {
+        for (let item of queue_list) {
             queue_text += `${item.video_title} - ${seconds_to_mmss(item.duration)}, queued by ${item.user_tag} \r\n`
         }
         player_active_channel.send(queue_text);
@@ -304,6 +310,7 @@ function queue(params, message, callback) {
 }
 
 function skip(params, message) {
+    if (queue_timeout) clearTimeout(queue_timeout);
     playNext();
 }
 
